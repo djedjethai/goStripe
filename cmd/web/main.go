@@ -1,5 +1,7 @@
 package main
 
+// go path directory /home/jerome/Documents/code/go/domainhex/ but no package there ..??
+
 import (
 	"flag"
 	"fmt"
