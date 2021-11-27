@@ -1,5 +1,7 @@
 package main
 
+// START THE APP WITH: air (in the root dir)
+
 // go path directory /home/jerome/Documents/code/go/domainhex/ but no package there ..??
 
 import (
