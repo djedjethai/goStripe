@@ -57,6 +57,15 @@
 		// from account email.ok (bas a droite main page)
 		stripe = Stripe('pk_test_b8DAtiiHlr2TDXvmRYR50qQY00E39mIAXh')
 
+
+		function hidePayButton(){
+			// to prevent the user to click twice on the valid payment
+			payButton.classList.add("d-none");
+			// will run the spinner
+			processing.classList.remove("d-none");
+			
+		}
+
 		function val(){
 			let form = document.getElementById("charge_form")
 			// bootstrap validation
@@ -67,6 +76,7 @@
 				return	
 			}
 			form.classList.add("was-validated")
+			hidePayButton()
 		}
 		
 		(function(){
