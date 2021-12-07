@@ -28,7 +28,7 @@
 
     <div class="mb-3">
         <label for="cardholder-email" class="form-label">Cardholder Email</label>
-        <input type="email" class="form-control" id="cardholder-email" name="cardholder_email"
+        <input type="email" class="form-control" id="cardholder-email" name="email"
             required="" autocomplete="cardholder-email-new">
     </div>
 
@@ -67,7 +67,11 @@
     const payButton = document.getElementById("pay-button");
     const processing = document.getElementById("processing-payment");
 
+	console.log("grrr: ", {{index .StringMap "publishable_key"}})
+
     stripe = Stripe('pk_test_b8DAtiiHlr2TDXvmRYR50qQY00E39mIAXh');
+    // works if not using air......
+    // stripe = Stripe("{{index .StringMap "publishable_key"}}"); 
 
     function hidePayButton() {
         payButton.classList.add("d-none");
@@ -120,7 +124,7 @@
             body: JSON.stringify(payload),
         }
 
-        fetch("http://localhost:4001/api/payment-intent", requestOptions)
+        fetch({{.API}}, requestOptions)
             .then(response => response.text())
             .then(response => {
                 let data;
@@ -148,6 +152,7 @@
                                 processing.classList.add("d-none");
                                 showCardSuccess();
                                 // would submit the form
+				document.getElementById("charge_form").submit()
                             }
                         }
                     })
