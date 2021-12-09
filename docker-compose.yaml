@@ -19,7 +19,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: widget
+      MYSQL_DATABASE: widgets
       MYSQL_USER: mariadb
       MYSQL_PASSWORD: password
 

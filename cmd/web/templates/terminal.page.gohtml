@@ -67,8 +67,6 @@
     const payButton = document.getElementById("pay-button");
     const processing = document.getElementById("processing-payment");
 
-	console.log("grrr: ", {{index .StringMap "publishable_key"}})
-
     stripe = Stripe('pk_test_b8DAtiiHlr2TDXvmRYR50qQY00E39mIAXh');
     // works if not using air......
     // stripe = Stripe("{{index .StringMap "publishable_key"}}"); 
@@ -130,6 +128,7 @@
                 let data;
                 try {
                     data = JSON.parse(response);
+		    // stripe validate the payment using the returned paymentIntent
                     stripe.confirmCardPayment(data.client_secret, {
                         payment_method: {
                             card: card,
