@@ -22,7 +22,16 @@ type templateData struct {
 	CSSVersion      string
 }
 
-var functions = template.FuncMap{}
+// function to pass as middleware when rendering pages
+var functions = template.FuncMap{
+	"formatCurrency": formatCurrency,
+}
+
+func formatCurrency(n int) string {
+	f := float32(n / 100)
+	// to set to 2 decimal places
+	return fmt.Sprintf("$%.2f", f)
+}
 
 // Package embed provides access to files embedded in the running Go program.
 // Go source files that import "embed" can use the //go:embed directive to initialize a variable of type string, []byte, or FS with the contents of files read from the package directory or subdirectories at compile time.
