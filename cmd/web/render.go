@@ -9,17 +9,19 @@ import (
 )
 
 type templateData struct {
-	StringMap       map[string]string
-	IntMap          map[string]int
-	FloatMap        map[string]float32
-	Data            map[string]interface{}
-	CSRFToken       string
-	Flash           string
-	Warning         string
-	Error           string
-	IsAuthenticated int
-	API             string
-	CSSVersion      string
+	StringMap            map[string]string
+	IntMap               map[string]int
+	FloatMap             map[string]float32
+	Data                 map[string]interface{}
+	CSRFToken            string
+	Flash                string
+	Warning              string
+	Error                string
+	IsAuthenticated      int
+	API                  string
+	CSSVersion           string
+	StripeSecretKey      string
+	StripePublishableKey string
 }
 
 // function to pass as middleware when rendering pages
@@ -41,7 +43,8 @@ func formatCurrency(n int) string {
 var templateFS embed.FS
 
 func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
-	td.API = fmt.Sprintf("%s/api/payment-intent", app.config.api)
+	td.API = fmt.Sprintf("%s", app.config.api)
+	td.StripePublishableKey = app.config.stripe.key
 
 	return td
 }

@@ -24,5 +24,7 @@ services:
       MYSQL_PASSWORD: password
 
     volumes:
-      - ./db-data/mariadb:/docker-entrypoint-initdb.d
+      - ./db-data/mariadb:/var/lib/mysql
+      #- ./db-data/mariadb:/docker-entrypoint-initdb.d
+
 

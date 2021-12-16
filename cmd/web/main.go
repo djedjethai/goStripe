@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/djedjethai/goStripe/internal/driver"
+	"github.com/djedjethai/goStripe/internal/models"
 	"html/template"
 	"log"
 	"net/http"
@@ -39,6 +40,7 @@ type application struct {
 	errorLog    *log.Logger
 	templeCache map[string]*template.Template
 	version     string
+	DB          models.DBModel
 }
 
 func (app *application) serve() error {
@@ -87,6 +89,7 @@ func main() {
 		errorLog:    errorLog,
 		templeCache: tc,
 		version:     version,
+		DB:          models.DBModel{DB: conn},
 	}
 
 	err = app.serve()
