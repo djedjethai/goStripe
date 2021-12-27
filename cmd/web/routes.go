@@ -10,7 +10,7 @@ func (app *application) routes() http.Handler {
 
 	mux.Get("/virtual-terminal", app.VirtualTerminal)
 	mux.Post("/payment-succeeded", app.PaymentSucceeded)
-	mux.Get("/charge-once", app.ChargeOnce)
+	mux.Get("/widget/{id}", app.ChargeOnce)
 
 	// static content could be embeded the same way we did with the template
 	// but thats a little awkward, so we won't
