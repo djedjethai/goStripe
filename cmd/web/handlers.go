@@ -8,8 +8,15 @@ import (
 	"strconv"
 )
 
-func (app *application) VirtualTerminal(w http.ResponseWriter, r *http.Request) {
+// Home display the home page
+func (app *application) Home(w http.ResponseWriter, r *http.Request) {
+	if err := app.renderTemplate(w, r, "home", &templateData{}); err != nil {
+		app.errorLog.Println(err)
+	}
+}
 
+// VirtualTerminal display the virtual terminal page
+func (app *application) VirtualTerminal(w http.ResponseWriter, r *http.Request) {
 	if err := app.renderTemplate(w, r, "terminal", &templateData{}, "stripe-js"); err != nil {
 		app.errorLog.Println(err)
 	}
@@ -53,6 +60,12 @@ func (app *application) PaymentSucceeded(w http.ResponseWriter, r *http.Request)
 	expiryMonth := pm.Card.ExpMonth
 	expiryYear := pm.Card.ExpYear
 
+	// create a new customer
+
+	// create a new order
+
+	// create a new transaction
+
 	data := make(map[string]interface{})
 	data["cardholder"] = cardHolder
 	data["email"] = email
@@ -64,6 +77,9 @@ func (app *application) PaymentSucceeded(w http.ResponseWriter, r *http.Request)
 	data["expiry_month"] = expiryMonth
 	data["expiry_year"] = expiryYear
 	data["bank_return_code"] = pi.Charges.Data[0].ID
+
+	// we don't want the customer to be charge a second time if he reload the page
+	// so we save the payment datas to a session and redirect him to a new page
 
 	if err := app.renderTemplate(w, r, "succeeded", &templateData{
 		Data: data,

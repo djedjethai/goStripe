@@ -7,6 +7,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/alexedwards/scs/v2"
 	"github.com/djedjethai/goStripe/internal/driver"
 	"github.com/djedjethai/goStripe/internal/models"
 	"html/template"
@@ -20,6 +21,8 @@ const (
 	version    = "1.0.0"
 	cssVersion = "1"
 )
+
+var session *scs.SessionManager
 
 type config struct {
 	port int
@@ -41,6 +44,7 @@ type application struct {
 	templeCache map[string]*template.Template
 	version     string
 	DB          models.DBModel
+	Session     *scs.SessionManager
 }
 
 func (app *application) serve() error {
@@ -75,6 +79,11 @@ func main() {
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	conn, err := driver.OpenDB(cfg.db.dsn)
+
+	// setup the session
+	session = scs.New()
+	session.Lifetime = 24 * time.Hour
+
 	if err != nil {
 		// use .Fatal() to exit as the db connection failed
 		errorLog.Fatal(err)
@@ -90,6 +99,7 @@ func main() {
 		templeCache: tc,
 		version:     version,
 		DB:          models.DBModel{DB: conn},
+		Session:     session,
 	}
 
 	err = app.serve()
