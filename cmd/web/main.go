@@ -5,6 +5,7 @@ package main
 // go path directory /home/jerome/Documents/code/go/domainhex/ but no package there ..??
 
 import (
+	"encoding/gob"
 	"flag"
 	"fmt"
 	"github.com/alexedwards/scs/v2"
@@ -62,6 +63,11 @@ func (app *application) serve() error {
 }
 
 func main() {
+	// we register a type with the gob encoding
+	// we need to add a second {} ()
+	// with that we can put the type map[string]interface{} into the session
+	// ex (before passing the TransactionData type): gob.Register(map[string]interface{}{})
+	gob.Register(TransactionData{})
 	var cfg config
 
 	flag.IntVar(&cfg.port, "port", 4000, "Server port to listen on")
