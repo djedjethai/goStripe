@@ -10,12 +10,19 @@ func (app *application) routes() http.Handler {
 	// add the middleware(the function SessionLoad)
 	mux.Use(SessionLoad)
 
-	mux.Get("/virtual-terminal", app.VirtualTerminal)
 	mux.Get("/", app.Home)
+
+	mux.Get("/virtual-terminal", app.VirtualTerminal)
+	mux.Post("/virtual-terminal-payment-succeeded", app.VirtualTerminalPaymentSucceeded)
+	mux.Get("/virtual-terminal-receipt", app.VirtualTerminalReceipt)
+
+	mux.Get("/widget/{id}", app.ChargeOnce)
 	mux.Post("/payment-succeeded", app.PaymentSucceeded)
 	mux.Get("/receipt", app.Receipt)
 
-	mux.Get("/widget/{id}", app.ChargeOnce)
+	// creating a stub page and a stub handler
+	// for the plan options/page
+	mux.Get("/plans/bronze", app.BronzePlan)
 
 	// static content could be embeded the same way we did with the template
 	// but thats a little awkward, so we won't
