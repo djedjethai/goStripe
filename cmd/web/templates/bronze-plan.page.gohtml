@@ -32,7 +32,7 @@
 
     <div class="mb-3">
         <label for="last-name" class="form-label">Last Name</label>
-        <input type="text" class="form-control" id="cardholder-name" name="last_name"
+        <input type="text" class="form-control" id="last-name" name="last_name"
             required="" autocomplete="last-name-new">
     </div>
 
@@ -78,7 +78,7 @@
 <script src="https://js.stripe.com/v3/"></script>
 
 <script>
-let card;
+    let card;
     let stripe;
     const cardMessages = document.getElementById("card-messages");
     const payButton = document.getElementById("pay-button");
@@ -130,7 +130,10 @@ let card;
             billing_details: {
                 email: document.getElementById("cardholder-email").value,
             },
-        }).then(stripePaymentMethodHandler);
+        })
+	.then(stripePaymentMethodHandler)
+	.catch(e => console.log("from card: ", e))
+
     }
 
     function stripePaymentMethodHandler(result) {
@@ -145,8 +148,8 @@ let card;
                 email: document.getElementById("cardholder-email").value,
                 last_four: result.paymentMethod.card.last4,
 		card_brand: result.paymentMethod.card.brand,
-		exp_month: result.payment.card.exp_month,
-		exp_year: result.payment.card.exp_year,
+		exp_month: result.paymentMethod.card.exp_month,
+		exp_year: result.paymentMethod.card.exp_year,
 		first_name: document.getElementById("first-name").value,
 		last_name: document.getElementById("last-name").value,
 		amount: document.getElementById("amount").value,
@@ -166,8 +169,13 @@ let card;
             .then(function(data) {
                 console.log(data);
                 processing.classList.add("d-none");
-                // set hidden vars
-                // submit the form
+		showCardSuccess();
+		sessionStorage.first_name = document.getElementById("first-name").value
+		sessionStorage.last_name = document.getElementById("last-name").value
+		sessionStorage.amount = "{{formatCurrency $widget.Price}}"
+		sessionStorage.last_four = result.paymentMethod.card.last4
+
+		location.href = "/receipt/bronze"
             })
         }
     }

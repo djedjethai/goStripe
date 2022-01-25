@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
 	"github.com/stripe/stripe-go/v72"
+	"time"
 	// "fmt"
 	"github.com/djedjethai/goStripe/internal/cards"
 	"github.com/djedjethai/goStripe/internal/models"
@@ -17,8 +18,8 @@ type stripePayload struct {
 	PaymentMethod string `json:"payment_method"`
 	Email         string `json:"email"`
 	CardBrand     string `json:"card_brand"`
-	ExpiryMonth   string `json:"exp_month"`
-	ExpiryYear    string `json:"exp_year"`
+	ExpiryMonth   int    `json:"exp_month"`
+	ExpiryYear    int    `json:"exp_year"`
 	LastFour      string `json:"last_four"`
 	Plan          string `json:"plan"`
 	ProductID     string `json:"product_id"`
@@ -127,11 +128,13 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 
 	okay := true
 	var subscription *stripe.Subscription
+	txnMsg := "Transaction successful"
 
 	stripeCustomer, msg, err := card.CreateCustomer(data.PaymentMethod, data.Email)
 	if err != nil {
 		app.errorLog.Println(err)
 		okay = false
+		txnMsg = msg
 	}
 
 	if okay {
@@ -139,6 +142,7 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 		if err != nil {
 			app.errorLog.Println(err)
 			okay = false
+			txnMsg = "Error subscribing customer"
 		}
 
 		app.infoLog.Println("SubscriptionId is: ", subscription.ID)
@@ -152,7 +156,7 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 			return
 		}
 		// here we assume that any transaction is a new customer
-		customer, err := app.SaveCustomer(data.FirstName, data.LastName, data.Email)
+		customerID, err := app.SaveCustomer(data.FirstName, data.LastName, data.Email)
 		if err != nil {
 			app.errorLog.Println(err)
 			return
@@ -160,20 +164,45 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 
 		// create a new txn
 		amount, _ := strconv.Atoi(data.Amount)
-		expiryMonth, _ := strconv.Atoi(data.ExpiryMonth)
-		expiryYear, _ := strconv.Atoi(data.ExpiryYear)
+		// expiryMonth, _ := strconv.Atoi(data.ExpiryMonth)
+		// expiryYear, _ := strconv.Atoi(data.ExpiryYear)
 		txn := models.Transaction{
-			// A FINIR .....................
-			//
-			//
-			//
+			Amount:              amount,
+			Currency:            "cad",
+			LastFour:            data.LastFour,
+			ExpiryMonth:         data.ExpiryMonth,
+			ExpiryYear:          data.ExpiryYear,
+			TransactionStatusID: 2,
+		}
+
+		txnID, err := app.SaveTransaction(txn)
+		if err != nil {
+			app.errorLog.Println(err)
+			return
+		}
+
+		// create an order
+		order := models.Order{
+			WidgetID:      productID,
+			TransactionID: txnID,
+			CustomerID:    customerID,
+			StatusID:      1,
+			Amount:        amount,
+			CreatedAt:     time.Now(),
+			UpdatedAt:     time.Now(),
+		}
+
+		_, err = app.SaveOrder(order)
+		if err != nil {
+			app.errorLog.Println(err)
+			return
 		}
 
 	}
 
 	resp := jsonResponse{
 		OK:      okay,
-		Message: msg,
+		Message: txnMsg,
 	}
 
 	out, err := json.MarshalIndent(resp, "", " ")
@@ -187,6 +216,7 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 
 }
 
+// Save customer and return the Id
 func (app *application) SaveCustomer(firstName, lastName, email string) (int, error) {
 	customer := models.Customer{
 		FirstName: firstName,
@@ -195,6 +225,26 @@ func (app *application) SaveCustomer(firstName, lastName, email string) (int, er
 	}
 
 	id, err := app.DB.InsertCustomer(customer)
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
+}
+
+// SaveTransaction and return an id
+func (app *application) SaveTransaction(txn models.Transaction) (int, error) {
+
+	id, err := app.DB.InsertTransaction(txn)
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
+}
+
+// SaveOrder and return an id
+func (app *application) SaveOrder(order models.Order) (int, error) {
+
+	id, err := app.DB.InsertOrder(order)
 	if err != nil {
 		return 0, err
 	}

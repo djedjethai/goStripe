@@ -23,6 +23,8 @@ func (app *application) routes() http.Handler {
 	// creating a stub page and a stub handler
 	// for the plan options/page
 	mux.Get("/plans/bronze", app.BronzePlan)
+	// route to redirect to receipt page after BronzePlan is validated
+	mux.Get("/receipt/bronze", app.BronzePlanReceipt)
 
 	// static content could be embeded the same way we did with the template
 	// but thats a little awkward, so we won't
