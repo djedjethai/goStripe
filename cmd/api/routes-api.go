@@ -28,5 +28,7 @@ func (app *application) routes() http.Handler {
 	// a db test
 	mux.Get("/api/widget/{id}", app.GetWidgetByID)
 
+	mux.Post("/api/authenticate", app.CreateAuthToken)
+
 	return mux
 }

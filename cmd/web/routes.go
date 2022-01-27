@@ -26,6 +26,9 @@ func (app *application) routes() http.Handler {
 	// route to redirect to receipt page after BronzePlan is validated
 	mux.Get("/receipt/bronze", app.BronzePlanReceipt)
 
+	// authentification routes
+	mux.Get("/login", app.Login)
+
 	// static content could be embeded the same way we did with the template
 	// but thats a little awkward, so we won't
 	// let serve them from an external directory
