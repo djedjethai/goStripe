@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/stripe/stripe-go/v72"
+	"golang.org/x/crypto/bcrypt"
 	"time"
 	// "fmt"
 	"github.com/djedjethai/goStripe/internal/cards"
@@ -264,8 +266,55 @@ func (app *application) CreateAuthToken(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	payload := json.
+	user, err := app.DB.GetUserByEmail(userInput.Email)
+	if err != nil {
+		_ = app.invalidCredentials(w)
+		return
+	}
 
-	// w.Header().Set("Content-Type", "application/json")
-	// w.Write(userInput)
+	validPassword, err := app.passwordMatches(user.Password, userInput.Password)
+	if err != nil {
+		_ = app.invalidCredentials(w)
+		return
+	}
+
+	if !validPassword {
+		_ = app.invalidCredentials(w)
+		return
+	}
+
+	// generate the token
+
+	// ..??..
+
+	payload := struct {
+		Error   bool   `json:"error"`
+		Message string `json:"message"`
+		Test    string `json:"test"`
+	}{
+		Error:   false,
+		Message: "all works",
+		Test:    userInput.Email,
+	}
+
+	err = app.writeJSON(w, http.StatusOK, payload)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+}
+
+func (app *application) passwordMatches(hash, password string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	if err != nil {
+		switch {
+		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
+			return false, nil
+		default:
+			return false, err
+		}
+	}
+
+	return true, nil
 }
