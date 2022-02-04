@@ -5,6 +5,9 @@
 {{end}}
 
 {{define "content"}}
+
+    <div class="alert alert-danger text-center d-none" id="login-messages"></div>
+    
     <form action="/" method="post"
     name="login_form" id="login_form"
     class="d-block needs-validation login-form"
@@ -23,7 +26,7 @@
 
     <div class="mb-3">
         <label for="password" class="form-label">Password</label>
-        <input type="text" class="form-control" id="password" name="password"
+        <input type="password" class="form-control" id="password" name="password"
             required="" autocomplete="password-new">
     </div>
  
@@ -38,6 +41,23 @@
 
 {{define "js"}}
 <script>
+
+    let loginMessages = document.getElementById("login-messages")
+	
+    function showError(msg) {
+        loginMessages.classList.add("alert-danger");
+        loginMessages.classList.remove("alert-success");
+        loginMessages.classList.remove("d-none");
+        loginMessages.innerText = msg;
+    }
+
+    function showSuccess() {
+        loginMessages.classList.remove("alert-danger");
+        loginMessages.classList.add("alert-success");
+        loginMessages.classList.remove("d-none");
+        loginMessages.innerText = "Login successful";
+    }
+
 function val(){
 	 let form = document.getElementById("login_form");
         if (form.checkValidity() === false) {
@@ -65,7 +85,15 @@ function val(){
         fetch("{{.API}}/api/authenticate", requestOptions)
             .then(response => response.json())
             .then(response => {
-             	console.log("the response: ", response)
+		console.log("response: ", response)
+		if(response.error === false){
+			// in this case we r authenticated
+			localStorage.setItem('token', response.authentication_token.token)
+			localStorage.setItem('token_expiry', response.authentication_token.expiry)
+			showSuccess()
+		} else {
+			showError(response.message)
+		}
 	    })
  	    .catch(e => console.log("errrr: ", e))
 

@@ -3,15 +3,15 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/djedjethai/goStripe/internal/cards"
+	"github.com/djedjethai/goStripe/internal/models"
 	"github.com/go-chi/chi/v5"
 	"github.com/stripe/stripe-go/v72"
 	"golang.org/x/crypto/bcrypt"
-	"time"
-	// "fmt"
-	"github.com/djedjethai/goStripe/internal/cards"
-	"github.com/djedjethai/goStripe/internal/models"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type stripePayload struct {
@@ -284,17 +284,27 @@ func (app *application) CreateAuthToken(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// generate the token
+	token, err := models.GenerateToken(user.ID, 24*time.Hour, models.ScopeAuthentication)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
 
-	// ..??..
+	// save token to db
+	err = app.DB.InsertToken(token, user)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
 
 	payload := struct {
-		Error   bool   `json:"error"`
-		Message string `json:"message"`
-		Test    string `json:"test"`
+		Error   bool          `json:"error"`
+		Message string        `json:"message"`
+		Token   *models.Token `json:"authentication_token"`
 	}{
 		Error:   false,
-		Message: "all works",
-		Test:    userInput.Email,
+		Message: fmt.Sprintf("token for %s created", user.Email),
+		Token:   token,
 	}
 
 	err = app.writeJSON(w, http.StatusOK, payload)
