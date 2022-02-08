@@ -38,8 +38,6 @@ type jsonResponse struct {
 }
 
 func (app *application) authenticateToken(r *http.Request) (*models.User, error) {
-	var u models.User
-
 	authorizationHeader := r.Header.Get("Authorization")
 	if authorizationHeader == "" {
 		return nil, errors.New("No authorization header received")
@@ -56,8 +54,13 @@ func (app *application) authenticateToken(r *http.Request) (*models.User, error)
 	}
 
 	// get the user from the token's table
+	user, err := app.DB.GetUserFromToken(token)
+	if err != nil {
+		return nil, errors.New("No matching user found")
+	}
 
-	return &u, nil
+	// verif token validity
+	return user, nil
 }
 
 func (app *application) CheckAuthentication(w http.ResponseWriter, r *http.Request) {

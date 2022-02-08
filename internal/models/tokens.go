@@ -5,6 +5,8 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base32"
+	"fmt"
+	"log"
 	"time"
 )
 
@@ -52,8 +54,10 @@ func (m *DBModel) InsertToken(t *Token, u User) error {
 		return err
 	}
 
-	stmt = `insert into tokens (user_id, name, email, token_hash, created_at, updated_at) 
-		values (?, ?, ?, ?, ?, ?)`
+	fmt.Println("the token expire: ", t.Expiry)
+
+	stmt = `insert into tokens (user_id, name, email, token_hash, created_at, updated_at, expiry) 
+		values (?, ?, ?, ?, ?, ?, ?)`
 
 	_, err = m.DB.ExecContext(ctx, stmt,
 		u.ID,
@@ -62,9 +66,46 @@ func (m *DBModel) InsertToken(t *Token, u User) error {
 		t.Hash,
 		time.Now(),
 		time.Now(),
+		t.Expiry,
 	)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (m *DBModel) GetUserFromToken(token string) (*User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	tokenHash := sha256.Sum256([]byte(token))
+	var user User
+
+	// u will be an alias to the users table
+	query := `
+		select
+			u.id, u.first_name, u.last_name, u.email
+		from
+			users u
+			inner join tokens t on(u.id = t.user_id)
+		where 
+			t.token_hash = ?
+			and t.expiry > ?
+	`
+
+	// QueryRowContext() as we know we will not get more than one token
+	// tokenHash is a slice and here i need an array
+	// the way to convert it is: tokenHash[:]
+	err := m.DB.QueryRowContext(ctx, query, tokenHash[:], time.Now()).Scan(
+		&user.ID,
+		&user.FirstName,
+		&user.LastName,
+		&user.Email,
+	)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return &user, nil
 }
