@@ -374,3 +374,70 @@ func (app *application) passwordMatches(hash, password string) (bool, error) {
 
 	return true, nil
 }
+
+// at this time the payment has been done successfully
+func (app *application) VirtualTerminalPaymentSucceded(w http.ResponseWriter, r *http.Request) {
+	var txnData struct {
+		PaymentAmount   int    `json:"amount"`
+		PaymentCurrency string `json:"currency"`
+		FirstName       string `json:"first_name"`
+		LastName        string `json:"last_name"`
+		Email           string `json:"email"`
+		PaymentIntent   string `json:"payment_intent"`
+		PaymentMethod   string `json:"payment_method"`
+		BankReturnCode  string `json:"bank_return_code"`
+		ExpiryMonth     int    `json:"expiry_month"`
+		ExpiryYear      int    `json:"expiry_year"`
+		LastFour        string `json:"last_four"`
+	}
+
+	// extract data from stripe into txnData struct
+	err := app.readJSON(w, r, &txnData)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	card := cards.Card{
+		Secret: app.config.stripe.secret,
+		Key:    app.config.stripe.key,
+	}
+
+	// get the pi
+	pi, err := card.RetrievePaymentIntent(txnData.PaymentIntent)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	// get the pm
+	pm, err := card.GetPaymentMethod(txnData.PaymentMethod)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	txnData.LastFour = pm.Card.Last4
+	txnData.ExpiryMonth = int(pm.Card.ExpMonth)
+	txnData.ExpiryYear = int(pm.Card.ExpYear)
+
+	// create a new transaction
+	txn := models.Transaction{
+		Amount:              txnData.PaymentAmount,
+		Currency:            txnData.PaymentCurrency,
+		LastFour:            txnData.LastFour,
+		ExpiryMonth:         txnData.ExpiryMonth,
+		ExpiryYear:          txnData.ExpiryYear,
+		BankReturnCode:      pi.Charges.Data[0].ID,
+		TransactionStatusID: 2,
+	}
+
+	_, err = app.SaveTransaction(txn)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	app.writeJSON(w, http.StatusOK, txn)
+
+}

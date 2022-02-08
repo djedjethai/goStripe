@@ -32,5 +32,20 @@ func (app *application) routes() http.Handler {
 
 	mux.Post("/api/is-authenticated", app.CheckAuthentication)
 
+	// available to us from the chi package
+	// allow us to create a new mux and apply middleware to it
+	// and to groups certain kinds of routes logicaly into one location
+	// all routes starting /api/admin/xxx will be handle by this middleware
+	mux.Route("/api/admin", func(mux chi.Router) {
+		mux.Use(app.Auth)
+
+		// means /api/admin/test
+		mux.Get("/test", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("you just accessed to /api/admin/test"))
+		})
+
+		mux.Post("/virtual-terminal-succeeded", app.VirtualTerminalPaymentSucceded)
+	})
+
 	return mux
 }
