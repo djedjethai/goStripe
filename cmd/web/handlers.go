@@ -18,7 +18,7 @@ func (app *application) Home(w http.ResponseWriter, r *http.Request) {
 
 // VirtualTerminal display the virtual terminal page
 func (app *application) VirtualTerminal(w http.ResponseWriter, r *http.Request) {
-	if err := app.renderTemplate(w, r, "terminal", &templateData{}, "stripe-js"); err != nil {
+	if err := app.renderTemplate(w, r, "terminal", &templateData{}); err != nil {
 		app.errorLog.Println(err)
 	}
 }
@@ -322,4 +322,21 @@ func (app *application) Login(w http.ResponseWriter, r *http.Request) {
 	if err := app.renderTemplate(w, r, "login", &templateData{}); err != nil {
 		app.errorLog.Println(err)
 	}
+}
+
+func (app *application) PostLogin(w http.ResponseWriter, r *http.Request) {
+	// renew token, should always be at any connection
+	app.Session.RenewToken(r.Context())
+
+	err := r.ParseForm()
+	if err != nil {
+		app.errorLog.Println(err)
+		return
+	}
+
+	email := r.Form.Get("email")
+	password := r.Form.Get("password")
+
+	// verify with db
+
 }

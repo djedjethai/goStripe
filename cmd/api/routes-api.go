@@ -39,11 +39,6 @@ func (app *application) routes() http.Handler {
 	mux.Route("/api/admin", func(mux chi.Router) {
 		mux.Use(app.Auth)
 
-		// means /api/admin/test
-		mux.Get("/test", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("you just accessed to /api/admin/test"))
-		})
-
 		mux.Post("/virtual-terminal-succeeded", app.VirtualTerminalPaymentSucceded)
 	})
 

@@ -8,7 +8,7 @@
 
     <div class="alert alert-danger text-center d-none" id="login-messages"></div>
     
-    <form action="/" method="post"
+    <form action="/" method="post" action="/login"
     name="login_form" id="login_form"
     class="d-block needs-validation login-form"
     autocomplete="off" novalidate="">
@@ -91,7 +91,7 @@ function val(){
 			localStorage.setItem('token', response.authentication_token.token)
 			localStorage.setItem('token_expiry', response.authentication_token.expiry)
 			showSuccess()
-			location.href = "/"
+			document.getElementById("login_form").submit()
 		} else {
 			showError(response.message)
 		}

@@ -268,3 +268,21 @@ func (m *DBModel) GetUserByEmail(email string) (User, error) {
 	return u, nil
 
 }
+
+func (m *DBModel) Authenticate(email, password string) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var id int
+	var hashedPassword string
+
+	row := m.DB.QueryRowContext(ctx, "select id, password from users where email = ?", email)
+	err := row.Scan(&id, &hashedPassword)
+	if err != nil {
+		return id, err
+	}
+
+	// check the password with the hashedPassword from db
+
+	// A FINIR ........
+}

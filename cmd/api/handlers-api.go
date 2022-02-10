@@ -429,6 +429,8 @@ func (app *application) VirtualTerminalPaymentSucceded(w http.ResponseWriter, r 
 		ExpiryMonth:         txnData.ExpiryMonth,
 		ExpiryYear:          txnData.ExpiryYear,
 		BankReturnCode:      pi.Charges.Data[0].ID,
+		PaymentIntent:       txnData.PaymentIntent,
+		PaymentMethod:       txnData.PaymentMethod,
 		TransactionStatusID: 2,
 	}
 

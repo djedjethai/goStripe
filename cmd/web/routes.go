@@ -12,9 +12,15 @@ func (app *application) routes() http.Handler {
 
 	mux.Get("/", app.Home)
 
-	mux.Get("/virtual-terminal", app.VirtualTerminal)
-	mux.Post("/virtual-terminal-payment-succeeded", app.VirtualTerminalPaymentSucceeded)
-	mux.Get("/virtual-terminal-receipt", app.VirtualTerminalReceipt)
+	// middleware
+	mux.Route("/admin", func(mux chi.Router) {
+		mux.Use(app.Auth)
+		mux.Get("/virtual-terminal", app.VirtualTerminal)
+	})
+
+	// still exist but we do not use it anymore
+	// mux.Post("/virtual-terminal-payment-succeeded", app.VirtualTerminalPaymentSucceeded)
+	// mux.Get("/virtual-terminal-receipt", app.VirtualTerminalReceipt)
 
 	mux.Get("/widget/{id}", app.ChargeOnce)
 	mux.Post("/payment-succeeded", app.PaymentSucceeded)
@@ -28,6 +34,7 @@ func (app *application) routes() http.Handler {
 
 	// authentification routes
 	mux.Get("/login", app.Login)
+	mux.Post("/login", app.PostLogin)
 
 	// static content could be embeded the same way we did with the template
 	// but thats a little awkward, so we won't
