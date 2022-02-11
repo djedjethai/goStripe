@@ -3,8 +3,12 @@ package models
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"strings"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // DBModel is the type for database connection values
@@ -283,6 +287,13 @@ func (m *DBModel) Authenticate(email, password string) (int, error) {
 	}
 
 	// check the password with the hashedPassword from db
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	if err == bcrypt.ErrMismatchedHashAndPassword {
+		return 0, errors.New("incorrect password")
+	} else if err != nil {
+		fmt.Println("con de toi")
+		return 0, err
+	}
 
-	// A FINIR ........
+	return id, nil
 }

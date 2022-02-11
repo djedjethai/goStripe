@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	// "fmt"
 	"io"
 	"net/http"
 )
@@ -20,7 +19,6 @@ func (app *application) writeJSON(w http.ResponseWriter, status int, data interf
 			w.Header()[k] = v
 		}
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	w.Write(out)

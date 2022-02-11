@@ -8,7 +8,7 @@
 
     <div class="alert alert-danger text-center d-none" id="login-messages"></div>
     
-    <form action="/" method="post" action="/login"
+    <form action="/login" method="POST"
     name="login_form" id="login_form"
     class="d-block needs-validation login-form"
     autocomplete="off" novalidate="">
@@ -81,11 +81,10 @@ function val(){
             },
             body: JSON.stringify(payload),
         }
-
-        fetch("{{.API}}/api/authenticate", requestOptions)
+        
+	fetch("{{.API}}/api/authenticate", requestOptions)
             .then(response => response.json())
-            .then(response => {
-		console.log("response: ", response)
+            .then(function(response){
 		if(response.error === false){
 			// in this case we r authenticated
 			localStorage.setItem('token', response.authentication_token.token)

@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/djedjethai/goStripe/internal/cards"
-	"github.com/djedjethai/goStripe/internal/models"
-	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/djedjethai/goStripe/internal/cards"
+	"github.com/djedjethai/goStripe/internal/models"
+	"github.com/go-chi/chi/v5"
 )
 
 // Home display the home page
@@ -338,5 +339,27 @@ func (app *application) PostLogin(w http.ResponseWriter, r *http.Request) {
 	password := r.Form.Get("password")
 
 	// verify with db
+	// my notif: when login, the api is called first to refresh the api token
+	// and the user and password is already verify
+	// then this function call comes right after and we verify it again.
+	// understand that front verify again before setting session
+	// but still 2 call to the db for the same verification.....
+	id, err := app.DB.Authenticate(email, password)
+	if err != nil {
+		// can log err
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 
+	// create session
+	app.Session.Put(r.Context(), "userID", id)
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (app *application) Logout(w http.ResponseWriter, r *http.Request) {
+	app.Session.Destroy(r.Context())
+	// then renew the session token for safety
+	app.Session.RenewToken(r.Context())
+
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
