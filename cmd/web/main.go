@@ -8,6 +8,7 @@ import (
 	"encoding/gob"
 	"flag"
 	"fmt"
+	"github.com/alexedwards/scs/mysqlstore"
 	"github.com/alexedwards/scs/v2"
 	"github.com/djedjethai/goStripe/internal/driver"
 	"github.com/djedjethai/goStripe/internal/models"
@@ -89,6 +90,7 @@ func main() {
 	// setup the session
 	session = scs.New()
 	session.Lifetime = 24 * time.Hour
+	session.Store = mysqlstore.New(conn)
 
 	if err != nil {
 		// use .Fatal() to exit as the db connection failed

@@ -36,6 +36,7 @@ func (app *application) routes() http.Handler {
 	mux.Get("/login", app.Login)
 	mux.Post("/login", app.PostLogin)
 	mux.Get("/logout", app.Logout)
+	mux.Get("/forgot-password", app.ForgotPassword)
 
 	// static content could be embeded the same way we did with the template
 	// but thats a little awkward, so we won't

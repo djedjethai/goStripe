@@ -443,3 +443,25 @@ func (app *application) VirtualTerminalPaymentSucceded(w http.ResponseWriter, r 
 	app.writeJSON(w, http.StatusOK, txn)
 
 }
+
+func (app *application) SendPasswordResetEmail(w http.ResponseWriter, r *http.Request) {
+	var payload struct {
+		Email `json:"email"`
+	}
+
+	err := app.readJSON(w, r, &payload)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	// will send an email with the link to the password request
+	var data struct {
+		Link string
+	}
+
+	data.Link = "http://www.whatever.com"
+
+	// send mail
+
+}

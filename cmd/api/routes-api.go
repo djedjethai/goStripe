@@ -32,6 +32,8 @@ func (app *application) routes() http.Handler {
 
 	mux.Post("/api/is-authenticated", app.CheckAuthentication)
 
+	mux.Post("/api/forgot-password", app.SendPasswordResetEmail)
+
 	// available to us from the chi package
 	// allow us to create a new mux and apply middleware to it
 	// and to groups certain kinds of routes logicaly into one location
