@@ -445,6 +445,9 @@ func (app *application) VirtualTerminalPaymentSucceded(w http.ResponseWriter, r 
 }
 
 func (app *application) SendPasswordResetEmail(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Println("arrived in sendPasswordReset: ")
+
 	var payload struct {
 		Email string `json:"email"`
 	}
@@ -454,6 +457,8 @@ func (app *application) SendPasswordResetEmail(w http.ResponseWriter, r *http.Re
 		app.badRequest(w, r, err)
 		return
 	}
+
+	link := fmt.Sprintf("%s/reset-password?email=%s", app.config.frontend, payload.Email)
 
 	// will send an email with the link to the password request
 	var data struct {

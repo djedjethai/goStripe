@@ -34,7 +34,7 @@ func (app *application) sendEmail(from, to, subject, tmpl string, data interface
 	formattedMessage := tpl.String()
 
 	// now we need to do the plainText
-	templateToRender = fmt.Sprintf("template/%s.plain.tmpl", tmpl)
+	templateToRender = fmt.Sprintf("templates/%s.plain.tmpl", tmpl)
 	t, err = template.New("email-plan").ParseFS(emailTemplateFS, templateToRender)
 	if err != nil {
 		app.errorLog.Println(err)
