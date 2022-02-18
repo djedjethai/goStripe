@@ -4,15 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/djedjethai/goStripe/internal/cards"
-	"github.com/djedjethai/goStripe/internal/models"
-	"github.com/go-chi/chi/v5"
-	"github.com/stripe/stripe-go/v72"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/djedjethai/goStripe/internal/cards"
+	"github.com/djedjethai/goStripe/internal/models"
+	"github.com/djedjethai/goStripe/internal/urlsigner"
+	"github.com/go-chi/chi/v5"
+	"github.com/stripe/stripe-go/v72"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type stripePayload struct {
@@ -458,17 +460,38 @@ func (app *application) SendPasswordResetEmail(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	// verify in the db if the email exist
+	_, err = app.DB.GetUserByEmail(payload.Email)
+	if err != nil {
+		var resp struct {
+			Error   bool   `json:"error"`
+			Message string `json:"message"`
+		}
+
+		resp.Error = true
+		resp.Message = "No email found on our system"
+
+		app.writeJSON(w, http.StatusAccepted, resp)
+		return
+	}
+
 	link := fmt.Sprintf("%s/reset-password?email=%s", app.config.frontend, payload.Email)
+
+	sign := urlsigner.Signer{
+		Secret: []byte(app.config.secretKey),
+	}
+
+	signedLink := sign.GenerateTokenFromString(link)
 
 	// will send an email with the link to the password request
 	var data struct {
 		Link string
 	}
 
-	data.Link = "http://www.whatever.com"
+	data.Link = signedLink
 
 	// send mail
-	err = app.sendEmail("info@test.com", "info@test.com", "reset password", "password-reset", data)
+	err = app.sendEmail("info@test.com", payload.Email, "reset password", "password-reset", data)
 	if err != nil {
 		app.errorLog.Println(err)
 		app.badRequest(w, r, err)
