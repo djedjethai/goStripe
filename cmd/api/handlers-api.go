@@ -446,6 +446,7 @@ func (app *application) VirtualTerminalPaymentSucceded(w http.ResponseWriter, r 
 
 }
 
+// client lost password, request a new one passing his email in the form
 func (app *application) SendPasswordResetEmail(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("arrived in sendPasswordReset: ")
@@ -503,6 +504,48 @@ func (app *application) SendPasswordResetEmail(w http.ResponseWriter, r *http.Re
 	}
 
 	resp.Error = false
+
+	app.writeJSON(w, http.StatusCreated, resp)
+}
+
+//
+func (app *application) ResetPassword(w http.ResponseWriter, r *http.Request) {
+	var payload struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	err := app.readJSON(w, r, &payload)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	user, err := app.DB.GetUserByEmail(payload.Email)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	// create a new hash
+	newHash, err := bcrypt.GenerateFromPassword([]byte(payload.Password), 12)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	err = app.DB.UpdatePasswordForUser(user, string(newHash))
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	var resp struct {
+		Error   bool   `json:"error"`
+		Message string `json:"message"`
+	}
+	resp.Error = false
+	resp.Message = "password changed"
 
 	app.writeJSON(w, http.StatusCreated, resp)
 }

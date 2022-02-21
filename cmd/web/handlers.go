@@ -373,6 +373,7 @@ func (app *application) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// come from the email where client got url to click on to renew password
 func (app *application) ShowResetPassword(w http.ResponseWriter, r *http.Request) {
 	theURL := r.RequestURI
 	testURL := fmt.Sprintf("%s%s", app.config.frontend, theURL)
@@ -381,15 +382,24 @@ func (app *application) ShowResetPassword(w http.ResponseWriter, r *http.Request
 		Secret: []byte(app.config.secretKey),
 	}
 
+	// verif token (sent as url param in the link)
 	valid := signer.VerifyToken(testURL)
 	if !valid {
 		app.errorLog.Println("Invalid url - tampering detected")
 		return
 	}
 
+	// make sure the token is not expired
+	expired := signer.Expired(testURL, 60)
+	if expired {
+		app.errorLog.Println("Link expired")
+		return
+	}
+
 	data := make(map[string]interface{})
 	data["email"] = r.URL.Query().Get("email")
 
+	// show a form for client to reset his password
 	if err := app.renderTemplate(w, r, "reset-password", &templateData{
 		Data: data,
 	}); err != nil {
