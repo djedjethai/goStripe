@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/djedjethai/goStripe/internal/cards"
+	"github.com/djedjethai/goStripe/internal/encryption"
 	"github.com/djedjethai/goStripe/internal/models"
 	"github.com/djedjethai/goStripe/internal/urlsigner"
 	"github.com/go-chi/chi/v5"
@@ -375,6 +376,7 @@ func (app *application) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 
 // come from the email where client got url to click on to renew password
 func (app *application) ShowResetPassword(w http.ResponseWriter, r *http.Request) {
+	email := r.URL.Query().Get("email")
 	theURL := r.RequestURI
 	testURL := fmt.Sprintf("%s%s", app.config.frontend, theURL)
 
@@ -396,8 +398,16 @@ func (app *application) ShowResetPassword(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	// encrypt the email for not being visible in browser
+	enc := encryption.Encryption{Key: []byte(app.config.secretKey)}
+	encryptedEmail, err := enc.Encrypt(email)
+	if err != nil {
+		app.errorLog.Println("encryption failed")
+		return
+	}
+
 	data := make(map[string]interface{})
-	data["email"] = r.URL.Query().Get("email")
+	data["email"] = encryptedEmail
 
 	// show a form for client to reset his password
 	if err := app.renderTemplate(w, r, "reset-password", &templateData{
