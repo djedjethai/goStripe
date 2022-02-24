@@ -64,7 +64,7 @@ func (app *application) renderTemplate(w http.ResponseWriter, r *http.Request, p
 	_, templateInMap := app.templeCache[templateToRender]
 
 	// we want to use the cache in production only
-	if app.config.env == "production" && templateInMap {
+	if templateInMap {
 		t = app.templeCache[templateToRender]
 	} else {
 		// build the template
