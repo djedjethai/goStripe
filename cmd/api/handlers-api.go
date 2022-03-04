@@ -238,6 +238,7 @@ func (app *application) CreateCustomerAndSubscribeToPlan(w http.ResponseWriter, 
 			TransactionID: txnID,
 			CustomerID:    customerID,
 			StatusID:      1,
+			Quantity:      1,
 			Amount:        amount,
 			CreatedAt:     time.Now(),
 			UpdatedAt:     time.Now(),
@@ -567,4 +568,27 @@ func (app *application) AllSales(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.writeJSON(w, http.StatusOK, AllSales)
+}
+
+func (app *application) AllSubscriptions(w http.ResponseWriter, r *http.Request) {
+	AllSales, err := app.DB.GetAllSubscriptions()
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	app.writeJSON(w, http.StatusOK, AllSales)
+}
+
+func (app *application) GetSale(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	orderID, err := strconv.Atoi(id)
+
+	order, err := app.DB.GetOrderByID(orderID)
+	if err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	app.writeJSON(w, http.StatusOK, order)
 }

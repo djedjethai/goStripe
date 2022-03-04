@@ -78,7 +78,7 @@
 <script src="https://js.stripe.com/v3/"></script>
 
 <script>
-    let card;
+let card;
     let stripe;
     const cardMessages = document.getElementById("card-messages");
     const payButton = document.getElementById("pay-button");
@@ -130,10 +130,7 @@
             billing_details: {
                 email: document.getElementById("cardholder-email").value,
             },
-        })
-	.then(stripePaymentMethodHandler)
-	.catch(e => console.log("from card: ", e))
-
+        }).then(stripePaymentMethodHandler);
     }
 
     function stripePaymentMethodHandler(result) {
@@ -142,17 +139,17 @@
         } else {
             // create a customer and subscribe to plan
             let payload = {
-		product_id: document.getElementById("product_id").value,
+            product_id: document.getElementById("product_id").value,
                 plan: '{{$widget.PlanID}}',
                 payment_method: result.paymentMethod.id,
                 email: document.getElementById("cardholder-email").value,
                 last_four: result.paymentMethod.card.last4,
-		card_brand: result.paymentMethod.card.brand,
-		exp_month: result.paymentMethod.card.exp_month,
-		exp_year: result.paymentMethod.card.exp_year,
-		first_name: document.getElementById("first-name").value,
-		last_name: document.getElementById("last-name").value,
-		amount: document.getElementById("amount").value,
+                card_brand: result.paymentMethod.card.brand,
+                exp_month: result.paymentMethod.card.exp_month,
+                exp_year: result.paymentMethod.card.exp_year,
+                first_name: document.getElementById("first-name").value,
+                last_name: document.getElementById("last-name").value,
+                amount: document.getElementById("amount").value,
             }
 
             const requestOptions = {
@@ -169,13 +166,13 @@
             .then(function(data) {
                 console.log(data);
                 processing.classList.add("d-none");
-		showCardSuccess();
-		sessionStorage.first_name = document.getElementById("first-name").value
-		sessionStorage.last_name = document.getElementById("last-name").value
-		sessionStorage.amount = "{{formatCurrency $widget.Price}}"
-		sessionStorage.last_four = result.paymentMethod.card.last4
+                showCardSuccess();
+                sessionStorage.first_name = document.getElementById("first-name").value;
+                sessionStorage.last_name = document.getElementById("last-name").value;
+                sessionStorage.amount = "{{formatCurrency $widget.Price}}";
+                sessionStorage.last_four = result.paymentMethod.card.last4;
 
-		location.href = "/receipt/bronze"
+                location.href = "/receipt/bronze";
             })
         }
     }
